@@ -35,8 +35,8 @@ response = client.models.generate_content(
     model ="gemini-3.6-flash", # The specific generative engine model that the code is communicating with
     contents = (f"Generate 2 open-ended active recall questions based on these notes:\n\n{sample_notes}"), # The actual prompt that the AI will receive
     config = types.GenerateContentConfig(
-        reponse_mime_type = "application/json" # Makes the engine restrict the output to JSON
-        response_schema = Studyset, # guides the engine to align the formatting to match the structure of the StudySet class
+        response_mime_type = "application/json", # Makes the engine restrict the output to JSON
+        response_schema = StudySet, # guides the engine to align the formatting to match the structure of the StudySet class
     ),
 )
 
