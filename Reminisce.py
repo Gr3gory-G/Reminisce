@@ -32,9 +32,9 @@ app = FastAPI()
 # Configure CORS to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["*"]
-    allow_methods = ["*"]
-    allow_headers = ["*"]
+    allow_origins = ["*"],
+    allow_methods = ["*"],
+    allow_headers = ["*"],
 )
 
 # Initialize the Gemini client; creates an 
