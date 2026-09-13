@@ -85,6 +85,8 @@
             }
         }
         async function submitAnswer(index) {
+            console.log("Grade button clicked for prompt index:", index);
+            
             const userAnswer = document.getElementById(`user-answer-${index}`).value.trim();
             const resultDiv = document.getElementById(`grade-result-${index}`);
             const qData = currentQuestions[index]; 
