@@ -52,6 +52,7 @@ ai_model = 'gemini-3.6-flash' # The specific ai model being communicated with
 app.add_middleware(
     CORSMiddleware,
     allow_origins = ["*"],
+    allow_credentials=True,
     allow_methods = ["*"],
     allow_headers = ["*"],
 )
