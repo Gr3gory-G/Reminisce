@@ -59,6 +59,8 @@
                     throw new Error("Response structure invalid: missing 'questions' list.");
                 }
 
+                currentQuestions = data.questions;
+
                 resultsDiv.innerHTML = "";
 
                 data.questions.forEach((item, index) => {
