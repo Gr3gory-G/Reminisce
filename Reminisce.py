@@ -2,7 +2,7 @@
 # Date: Sept 13, 2026 
 # App Description: This app is a study guide 
 #   that turns your notes into quiz questions
-#   using AI
+#   using AI to build you ability to recall them
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -22,12 +22,31 @@ class StudySet(BaseModel):
 class StudyNotesRequest(BaseModel):
     notes: str
 
+# Schemas for grading
+class ConceptEvaluation(BaseModel):
+    concept: str
+    present: bool
+    evidence: str
+
+class GradingResult(BaseModel):
+    score_percentage: int
+    evaluations: list[ConceptEvaluation]
+    constructive_feedback: str
+
+class GradeRequest(BaseModel):
+    question: str
+    key_concepts: list[str]
+    user_answer: str
+
+
 
 # Reads the .env file and gets the GEMINI_API_KEY 
 # needed to communicate with generative ai
 load_dotenv()
 
 app = FastAPI()
+
+ai_model = 'gemini-3.6-flash' # The specific ai model being communicated with
 
 # Configure CORS to allow frontend requests
 app.add_middleware(
@@ -49,7 +68,7 @@ It primarily occurs in the chloroplasts, utilizing sunlight, water, and carbon d
 # Sends a prompt to the AI through the established client
 def generate_quiz_from_notes(notes: str) -> StudySet:
     response = client.models.generate_content(
-        model ="gemini-3.6-flash", # The specific generative engine model that the code is communicating with
+        model = ai_model, # The specific generative engine model that the code is communicating with
         contents = (f"Generate 2 open-ended active recall questions based on these notes:\n\n{sample_notes}"), # The actual prompt that the AI will receive
         config = types.GenerateContentConfig(
             response_mime_type = "application/json", # Makes the engine restrict the output to JSON
@@ -63,3 +82,26 @@ def generate_quiz_from_notes(notes: str) -> StudySet:
 async def generate_quiz(data: StudyNotesRequest):
     study_set = generate_quiz_from_notes(data.notes)
     return study_set
+
+@app.post("/api/grade", response_model=GradingResult)
+async def grade_user_answer(data: GradeRequest):
+    prompt = f"""
+    You are an objective academic evaluator grading an open_ended response.GradeRequest
+
+    Question: {data.question}
+    Required Rubric (Key Concepts): {data.key_concepts}
+    User Answer: {data.user_answer}
+
+    Evaluate whether the user's answer demonstrates understanding of each key concept.
+    Grade on semantic meaning, not exact keyword matches.
+    """
+
+    response = client.models.generate_content(
+        model = ai_model,
+        contents = prompt,
+        config = types.GenerateContentConfig(
+            response_mime_type = 'application/json',
+            response_schema = GradingResult,
+        ),
+    )
+    return response.parsed
