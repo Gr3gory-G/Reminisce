@@ -8,6 +8,7 @@
         textarea { width: 100%; height: 120px; margin-bottom: 10px; }
         button { padding: 10px 20px; cursor: pointer; }
         .card { border: 1px solid #ccc; padding: 15px; margin-top: 15px; border-radius: 6px; }
+        .grade-box { background: #f9f9f9; padding: 10px; border-left: 4px solid #007bff; margin-top: 10px; }
         .error { color: #d9534f; background: #fdf2f2; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; margin-top: 15px; }
     </style>
 </head>
@@ -19,6 +20,10 @@
     <div id="results"></div>
 
     <script>
+        // Global variable to hold generated questions in memory
+        let currentQuestions = []
+
+        // Phase 1: Fetch generated questions from FastAPI
         async function generateQuiz() {
             const notesInput = document.getElementById('notesInput');
             const resultsDiv = document.getElementById('results');
@@ -61,8 +66,15 @@
                         <div class="card">
                             <h3>Prompt ${index + 1}</h3>
                             <p><strong>Q:</strong> ${item.question}</p>
-                            <p><strong>Ideal Answer:</strong> ${item.ideal_answer}</p>
-                            <p><strong>Key Concepts:</strong> ${item.key_concepts.join(', ')}</p>
+                            
+                            <!--Text input for user's response -->
+                            <textarea id='user-answer-${index}' placeholder="Type your answer here..."></textarea><br>
+
+                            <!--Button to trigger grading -->
+                            <button oneclick='submitAnswer(${index})'> Grade My Answer </button>
+
+                            <!-- Empty container to hold gradae results -->
+                            <div id="grade-result-${index}"></div>
                         </div>
                     `;
                 });
@@ -70,6 +82,43 @@
             } catch (err) {
                 console.error("Error generated:", err);
                 resultsDiv.innerHTML = `<div class='error'><strong>Error:</strong> ${err.message}</div>`;
+            }
+        }
+        async function submitAnswer(index) {
+            const userAnswer = document.getElementById(`user-answer-${index}`).value.trim();
+            const resultDiv = document.getElementById(`grade-result-${index}`);
+            const qData = currentQuestions[index]; 
+
+            if(!userAnswer) {
+                resultDiv.innerHTML = "<p style='color:red;'>Please type an answer before submitting.</p>";
+                return;
+            }
+
+            resultDiv.innerHTML = "<p><em>Evaluating your response with Gemini...</em></p>";
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/grade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: qData.question,
+                        key_concepts: qData.key_concepts,
+                        user_answer: userAnswer
+                    })
+                });
+
+                const grade = await response.json();
+                if(!response.ok) throw new Error(grade.detail || "Grading failed");
+
+                resultDiv.innerHTML =  `
+                    <div class ="grade-box">
+                        <h4>Score: ${grade.score_percentage}%</h4>
+                        <p><strong>Feedback:</strong> %{grade.constructive_feedback}</p>
+                        <p><strong>Ideal Answer:</strong> ${qData.ideal_answer}</p>
+                    </div>
+                    `;
+            } catch (err) {
+                resultDiv.innerHTML = "<p style='color:red;'><strong>Error grading answer:</strong> ${err.message}</p>";
             }
         }
     </script>
