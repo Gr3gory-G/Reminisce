@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reminisce - Study Set Generator</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+        textarea { width: 100%; height: 120px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .card { border: 1px solid #ccc; padding: 15px; margin-top: 15px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h1>Reminisce Study Generator</h1>
+    <textarea id="notesInput" placeholder="Paste your study notes here..."></textarea>
+    <button onclick="generateQuiz()">Generatae Quiz</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function generateQuiz(){
+            const notes = document.getElementById('notesInput').value;
+            const resultsDiv = document.getElementById('results').value;
+            resultsDiv.innerHTML = "<p>Generating study set with Gemini...</p>";
+
+            const response = await fetch('http//127.0.0.1:8000/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes})
+            });
+
+            const data = await response.json();
+            resultsDiv.innerHTML = "";
+            
+            data.questions.forEach((item, index) => {
+                resultsDiv.innerHTML += `
+                    <div class="card">
+                        <h3>Prompt ${index + 1}</h3>
+                        <p><strong>Q:</strong> ${item.question}</p>
+                        <p><strong>Ideal Answer:</strong> ${item.ideal_answer}</p>
+                        <p><strong>Key Concepts:</strong> ${item.key_concepts.join(', ')}</p>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
