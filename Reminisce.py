@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+import traceback
 
 class OpenEndedQuestion(BaseModel):
     question: str
@@ -81,8 +83,18 @@ def generate_quiz_from_notes(notes: str) -> StudySet:
 
 @app.post('/api/generate')
 async def generate_quiz(data: StudyNotesRequest):
-    study_set = generate_quiz_from_notes(data.notes)
-    return study_set
+    try:
+        print("Received notes:", repr(data.notes[:200]))
+
+        study_set = generate_quiz_from_notes(data.notes)
+
+        if study_set is None:
+            raise Exception("Gemini returned no parsed response")
+
+        return study_set
+    except Exception as error:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(error))
 
 @app.post("/api/grade", response_model=GradingResult)
 async def grade_user_answer(data: GradeRequest):
