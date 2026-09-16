@@ -67,10 +67,10 @@ sample_notes = """Photosynthesis is the process used by plants to convert light 
 It primarily occurs in the chloroplasts, utilizing sunlight, water, and carbon dioxide to produce oxygen and glucose."""
 
 # Sends a prompt to the AI through the established client
-def generate_quiz_from_notes(data: StudyNotesRequest) -> StudySet:
+def generate_quiz_from_notes(notes: str) -> StudySet:
     response = client.models.generate_content(
         model = ai_model, # The specific generative engine model that the code is communicating with
-        contents = (f"Generate 2 open-ended active recall questions based on these notes:\n\n{data.notes}"), # The actual prompt that the AI will receive
+        contents = (f"Generate 2 open-ended active recall questions based on these notes:\n\n{notes}"), # The actual prompt that the AI will receive
         config = types.GenerateContentConfig(
             response_mime_type = "application/json", # Makes the engine restrict the output to JSON
             response_schema = StudySet, # guides the engine to align the formatting to match the structure of the StudySet class
