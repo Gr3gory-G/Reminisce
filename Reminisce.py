@@ -48,7 +48,7 @@ load_dotenv()
 
 app = FastAPI()
 
-ai_model = 'gemini-3.6-flash' # The specific ai model being communicated with
+ai_model = 'gemini-3.5-flash' # The specific ai model being communicated with
 
 # Configure CORS to allow frontend requests
 app.add_middleware(
