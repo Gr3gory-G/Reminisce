@@ -15,7 +15,7 @@
 <body>
     <h1>Reminisce Study Generator</h1>
     <textarea id="notesInput" placeholder="Paste your study notes here..."></textarea><br>
-    <button onclick="generateQuiz(notes)">Generate Quiz</button>
+    <button onclick="generateQuiz()">Generate Quiz</button>
 
     <div id="results"></div>
 
@@ -27,13 +27,13 @@
         async function generateQuiz() {
             const notesInput = document.getElementById('notesInput');
             const resultsDiv = document.getElementById('results');
+            const notes = notesInput.value.trim();
 
             if (!notesInput || !resultsDiv) {
                 console.error("HTML elements missing!");
                 return;
             }
 
-            const notes = notesInput.value.trim();
             if (!notes) {
                 resultsDiv.innerHTML = "<div class='error'>Please enter some notes first.</div>";
                 return;
